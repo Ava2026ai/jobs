@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jobs.wohlfeil-gruppe.de</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #111;
+  --surface2: #161616;
+  --green: #00e676;
+  --green-dim: #00c853;
+  --green-dark: #003d1a;
+  --green-glow: rgba(0,230,118,0.08);
+  --text: #d4d4d4;
+  --text-dim: #555;
+  --text-bright: #f0f0f0;
+  --border: #1e1e1e;
+  --cursor-green: #00e676;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* SCANLINES */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* TOPBAR */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.dot-row { display:flex; gap:6px; }
+.dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+
+.topbar-title {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.topbar-title span { color: var(--green); }
+
+.topbar-right {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.topbar-right a {
+  color: var(--green);
+  text-decoration: none;
+}
+.topbar-right a:hover { text-decoration: underline; }
+
+/* HERO TERMINAL */
+.terminal {
+  padding: 60px 48px 80px;
+  max-width: 900px;
+}
+
+.prompt-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.prompt {
+  color: var(--green);
+  font-size: 14px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.prompt-user { color: var(--green); }
+.prompt-at { color: var(--text-dim); }
+.prompt-host { color: #64b5f6; }
+.prompt-path { color: var(--text-dim); }
+
+.cmd {
+  font-size: 14px;
+  color: var(--text-bright);
+}
+
+.output {
+  padding-left: 0;
+  margin-bottom: 32px;
+}
+
+.output-line {
+  font-size: 13px;
+  color: var(--text);
+  padding: 2px 0;
+}
+.output-line.green { color: var(--green); }
+.output-line.dim { color: var(--text-dim); }
+.output-line.bright { color: var(--text-bright); font-size: 14px; }
+.output-line.big {
+  font-size: clamp(28px, 5vw, 52px);
+  color: var(--green);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 8px 0;
+  letter-spacing: -0.02em;
+}
+.output-line.big span { color: var(--text-bright); }
+
+.blink {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background: var(--green);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.section-break {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 48px 0;
+}
+
+/* ROLE CARDS */
+.roles-section {
+  padding: 0 48px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-header {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-header::before {
+  content: '//';
+  color: var(--green);
+}
+.section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.role-card {
+  border: 1px solid var(--border);
+  margin-bottom: 2px;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+  overflow: hidden;
+}
+.role-card:hover {
+  border-color: var(--green-dim);
+  background: var(--green-glow);
+}
+.role-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--green);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+  transform-origin: bottom;
+}
+.role-card:hover::before { transform: scaleY(1); }
+
+.role-inner {
+  padding: 36px 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+
+.role-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 20px;
+}
+.role-meta .idx { color: var(--green); }
+
+.role-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.role-card p {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  max-width: 560px;
+}
+
+.tags { display:flex; flex-wrap:wrap; gap:8px; }
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.tag.g {
+  border-color: var(--green-dim);
+  color: var(--green);
+  background: var(--green-glow);
+}
+
+.vesting-box {
+  text-align: right;
+  min-width: 100px;
+}
+.vesting-num {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--green);
+  display: block;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.vesting-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  display: block;
+  margin-top: 4px;
+}
+
+/* GET SECTION */
+.get-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 64px 48px;
+}
+.get-inner { max-width: 1100px; margin: 0 auto; }
+
+.get-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 32px;
+}
+.get-item {
+  padding: 32px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+.get-item:hover { border-color: var(--green-dim); }
+.get-key {
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  margin-bottom: 16px;
+}
+.get-item h4 {
+  font-size: 15px;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.get-item p {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* CONTACT TERMINAL */
+.contact-section {
+  padding: 80px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.contact-box {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.contact-box-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.contact-box-title {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+.contact-box-body {
+  padding: 40px;
+}
+
+.input-row {
+  margin-bottom: 20px;
+}
+.input-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  display: block;
+}
+.input-label span { color: var(--green); }
+.fake-input {
+  font-size: 13px;
+  color: var(--text-bright);
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fake-input .prefix { color: var(--green); }
+
+.submit-row {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.btn-terminal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--green);
+  color: #0d0d0d;
+  border: none;
+  padding: 14px 28px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s;
+}
+.btn-terminal:hover {
+  background: #33eb91;
+  transform: translate(-1px,-1px);
+  box-shadow: 2px 2px 0 var(--green-dim);
+}
+.submit-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.submit-hint span { color: var(--green); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-brand { font-size: 13px; color: var(--text-dim); }
+.footer-brand span { color: var(--green); }
+.footer-right { font-size: 11px; color: var(--text-dim); }
+
+/* ANIMATIONS */
+.type-in {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: none;
+  width: 0;
+  animation: type 0.8s steps(40, end) forwards;
+}
+@keyframes type { to { width: 100%; } }
+
+.delay-1 { animation-delay: 0.3s; }
+.delay-2 { animation-delay: 0.8s; }
+.delay-3 { animation-delay: 1.3s; }
+.delay-4 { animation-delay: 1.8s; }
+.delay-5 { animation-delay: 2.3s; }
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+}
+.fade-2 { animation-delay: 1.0s; }
+.fade-3 { animation-delay: 1.8s; }
+.fade-4 { animation-delay: 2.6s; }
+.fade-5 { animation-delay: 3.2s; }
+.fade-6 { animation-delay: 3.6s; }
+.fade-7 { animation-delay: 4.0s; }
+@keyframes fadeIn { to { opacity: 1; } }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.on { opacity:1; transform:translateY(0); }
+
+/* MOBILE */
+@media(max-width:768px) {
+  .topbar, .terminal, .roles-section, .get-section, .contact-section, footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .role-inner { grid-template-columns: 1fr; }
+  .vesting-box { text-align: left; }
+  .get-grid { grid-template-columns: 1fr; }
+  .topbar-right { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="dot-row">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+    </div>
+    <div class="topbar-title">
+      wohlfeil-gruppe — <span>jobs.sh</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="mailto:christian@wohlfeil-immobilien.de?subject=Entwickler%20–%2042">christian@wohlfeil-immobilien.de</a>
+  </div>
+</div>
+
+<!-- HERO TERMINAL -->
+<div class="terminal">
+
+  <div class="prompt-line fade-in">
+    <span class="prompt">
+      <span class="prompt-user">dev</span><span class="prompt-at">@</span><span class="prompt-host">wohlfeil</span><span class="prompt-at">:</span><span class="prompt-path">~/jobs</span><span class="prompt-at"> $</span>
+    </span>
+    <span class="cmd">cat ./wir-suchen.txt</span>
+  </div>
+
+  <div class="output fade-in fade-2">
+    <div class="output-line dim">──────────────────────────────────────────</div>
+    <div class="output-line big fade-in fade-3">
+      <span>Wir bauen</span><br>was Echtes.
+    </div>
+    <div class="output-line dim">──────────────────────────────────────────</div>
+  </div>
+
+  <div class="output fade-in fade-4">
+    <div class="output-line">Wohlfeil Unternehmensgruppe, Heilbronn.</div>
+    <div class="output-line">Wir entwickeln ein vollständiges SaaS-System</div>
+    <div class="output-line">für die Immobilienbranche. KI-Automatisierung,</div>
+    <div class="output-line">eigenes ERP, direkte Bankschnittstellen.</div>
+    <div class="output-line">&nbsp;</div>
+    <div class="output-line green">→ Kein Demo. Kein Hackathon. Echtes Produkt.</div>
+    <div class="output-line green">→ Vollständig spezifiziert. Bereit zum Bauen.</div>
+    <div class="output-line green">→ Unternehmensanteile via Vesting.</div>
+  </div>
+
+  <div class="prompt-line fade-in fade-5">
+    <span class="prompt">
+      <span class="prompt-user">dev</span><span class="prompt-at">@</span><span class="prompt-host">wohlfeil</span><span class="prompt-at">:</span><span class="prompt-path">~/jobs</span><span class="prompt-at"> $</span>
+    </span>
+    <span class="cmd">ls ./rollen/<span class="blink"></span></span>
+  </div>
+
+</div>
+
+<!-- ROLES -->
+<div class="roles-section" id="rollen">
+  <div class="section-header reveal">OFFENE POSITIONEN</div>
+
+  <div class="role-card reveal">
+    <div class="role-inner">
+      <div>
+        <div class="role-meta">
+          <span class="idx">[01]</span>
+          <span>BACKEND</span>
+          <span>VOLLZEIT</span>
+        </div>
+        <h3>Backend-Architekt</h3>
+        <p>Du baust den Kern. Datenbankarchitektur, komplexe Finanz- und Bankschnittstellen, Zahlungsverkehr. Die härteste Rolle – und die wichtigste. Ohne dich läuft nichts.</p>
+        <div class="tags">
+          <span class="tag g">Python / Node.js</span>
+          <span class="tag g">PostgreSQL</span>
+          <span class="tag g">Finanz-APIs</span>
+          <span class="tag">REST</span>
+          <span class="tag">Cloud</span>
+          <span class="tag">Auth / Security</span>
+        </div>
+      </div>
+      <div class="vesting-box">
+        <span class="vesting-num">20%</span>
+        <span class="vesting-label">VESTING</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="role-card reveal">
+    <div class="role-inner">
+      <div>
+        <div class="role-meta">
+          <span class="idx">[02]</span>
+          <span>KI / AUTOMATION</span>
+          <span>VOLLZEIT</span>
+        </div>
+        <h3>KI & Automatisierung</h3>
+        <p>Du baust die Intelligenz. LLM-Integration, automatische Klassifizierung, Chatbot-Architektur, proaktive Analysen. Cursor und Codex sind täglich im Einsatz.</p>
+        <div class="tags">
+          <span class="tag g">LLM / RAG</span>
+          <span class="tag g">Claude API</span>
+          <span class="tag g">NLP</span>
+          <span class="tag">OCR</span>
+          <span class="tag">Email-Automation</span>
+          <span class="tag">Wissensdatenbank</span>
+        </div>
+      </div>
+      <div class="vesting-box">
+        <span class="vesting-num">10%</span>
+        <span class="vesting-label">VESTING</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="role-card reveal">
+    <div class="role-inner">
+      <div>
+        <div class="role-meta">
+          <span class="idx">[03]</span>
+          <span>FRONTEND</span>
+          <span>VOLLZEIT</span>
+        </div>
+        <h3>Frontend & Portale</h3>
+        <p>Du baust was die Leute sehen. Dashboards, Echtzeit-Daten, Portale. Komplexe Daten verständlich machen – du entscheidest wie.</p>
+        <div class="tags">
+          <span class="tag g">React / Vue</span>
+          <span class="tag g">Charting</span>
+          <span class="tag">Tailwind</span>
+          <span class="tag">REST consumption</span>
+          <span class="tag">UX</span>
+        </div>
+      </div>
+      <div class="vesting-box">
+        <span class="vesting-num">10%</span>
+        <span class="vesting-label">VESTING</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT YOU GET -->
+<div class="get-section">
+  <div class="get-inner">
+    <div class="section-header reveal">WAS IHR BEKOMMT</div>
+    <div class="get-grid">
+      <div class="get-item reveal">
+        <div class="get-key">01 // OWNERSHIP</div>
+        <h4>Keine Praktikumsstelle</h4>
+        <p>Echte Architekturentscheidungen von Tag 1. Kein Ticket-Abarbeiten. Keine Randaufgaben.</p>
+      </div>
+      <div class="get-item reveal">
+        <div class="get-key">02 // EQUITY</div>
+        <h4>Unternehmensanteile</h4>
+        <p>Vesting 10–20% je Rolle. Klare Meilensteine, keine Luftschlösser. Anwaltlich aufgesetzt.</p>
+      </div>
+      <div class="get-item reveal">
+        <div class="get-key">03 // SPEC</div>
+        <h4>Fertige Spezifikation</h4>
+        <p>Das System ist vollständig definiert. Ihr müsst das Rad nicht erfinden – ihr müsst es bauen.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT TERMINAL -->
+<div class="contact-section">
+  <div class="section-header reveal">KONTAKT</div>
+
+  <div class="contact-box reveal">
+    <div class="contact-box-header">
+      <div class="dot-row">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <div class="contact-box-title">neue-bewerbung.sh</div>
+    </div>
+    <div class="contact-box-body">
+
+      <div class="input-row">
+        <span class="input-label"><span>TO</span> // Empfaenger</span>
+        <div class="fake-input">
+          <span class="prefix">→</span>
+          christian@wohlfeil-immobilien.de
+        </div>
+      </div>
+
+      <div class="input-row">
+        <span class="input-label"><span>SUBJECT</span> // Betreff</span>
+        <div class="fake-input">
+          <span class="prefix">→</span>
+          Entwickler – 42
+        </div>
+      </div>
+
+      <div class="input-row">
+        <span class="input-label"><span>BODY</span> // Was wir wissen wollen</span>
+        <div class="fake-input" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px;">
+          <span style="color:var(--text-dim)">→ Welche Rolle interessiert dich?</span>
+          <span style="color:var(--text-dim)">→ Was hast du bisher gebaut? (GitHub-Link willkommen)</span>
+          <span style="color:var(--text-dim)">→ Wann kannst du starten?</span>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <a href="mailto:christian@wohlfeil-immobilien.de?subject=Entwickler%20–%2042&body=Hallo%2C%0A%0AIch%20interessiere%20mich%20f%C3%BCr%20die%20Rolle%3A%0A%0AGithub%3A%0A%0AProjekte%3A%0A%0AStart%20m%C3%B6glich%20ab%3A"
+           class="btn-terminal">
+          $ send_mail --now →
+        </a>
+        <div class="submit-hint">
+          oder direkt: <span>Betreff "Entwickler – 42"</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <span>~</span> Wohlfeil Unternehmensgruppe · Heilbronn
+  </div>
+  <div class="footer-right">2026 · jobs.sh</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('on'), i * 100);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
